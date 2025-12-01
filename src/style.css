@@ -1,0 +1,36 @@
+* {
+    margin: 0;
+}
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  pointer-events: none; /* pour ne pas interférer avec la souris */
+}
+
+#crosshair::before, #crosshair::after {
+  content: '';
+  position: absolute;
+  background: white;
+}
+
+#crosshair::before {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+#crosshair::after {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
