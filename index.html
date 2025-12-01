@@ -5,8 +5,21 @@
 
     <meta charset="utf-8">
     <title>My first three.js app</title>
+    
   </head>
   <body>
+<div id="hud">
+  <div id="score">Score : 0</div>
+  <div id="timer">Temps : 0s</div>
+  <div id="level">Niveau : 1</div>
+</div>
+
+<div id="levelComplete" class="hidden">
+  <h1>NIVEAU TERMINÉ</h1>
+  <p id="levelCompleteMessage"></p>
+  <button id="nextLevelBtn">Continuer</button>
+</div>
+
     <script type="module" src="/src/index.js"></script>
   </body>
 </html>
