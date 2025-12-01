@@ -28,6 +28,11 @@ export class Enemies {
     enemy.mesh.position.copy(pos);
     this.enemies.push(enemy);
   }
+  clear() {
+  this.enemies.forEach(e => e.destroy());
+  this.enemies = [];
+}
+
 
   update(delta) {
     // Mise à jour de tous les ennemis
