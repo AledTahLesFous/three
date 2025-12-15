@@ -46,6 +46,20 @@ document.body.appendChild(crosshair);
 // Player
 const player = new Player(camera, scene);
 
+// Rearview mirror setup
+const rearviewCanvas = document.createElement('canvas');
+rearviewCanvas.id = 'rearview';
+rearviewCanvas.width = 320;
+rearviewCanvas.height = 240;
+document.body.appendChild(rearviewCanvas);
+
+const rearviewRenderer = new THREE.WebGLRenderer({ canvas: rearviewCanvas, antialias: true, alpha: true });
+rearviewRenderer.setSize(320, 240);
+rearviewRenderer.setClearColor(0x000000, 1);
+
+const rearviewCamera = new THREE.PerspectiveCamera(75, 320 / 240, 0.1, 2000);
+player.setRearviewCamera(rearviewCamera);
+
 // Enemies
 let enemies = new Enemies(scene, player, 20);
 
@@ -138,6 +152,10 @@ function animate() {
   checkLevelStatus();
 
   renderer.render(scene, camera);
+
+  // Render rearview
+  player.updateRearviewCamera();
+  rearviewRenderer.render(scene, rearviewCamera);
 }
 
 animate();

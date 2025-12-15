@@ -60,6 +60,24 @@ export class Player {
     this.bullets = [];
     this.fireRate = 2; // tirs par seconde
     this.fireCooldown = 0;
+
+    // --- Rearview mirror camera ---
+    this.rearviewCamera = null;
+  }
+
+  setRearviewCamera(camera) {
+    this.rearviewCamera = camera;
+  }
+
+  updateRearviewCamera() {
+    if (!this.rearviewCamera) return;
+    // Position: at player's position
+    this.rearviewCamera.position.copy(this.yawObject.position);
+    // Rotation: same as yaw object (includes pitch) but rotated 180° to look behind
+    this.rearviewCamera.rotation.order = 'YXZ';
+    this.rearviewCamera.rotation.y = this.yawObject.rotation.y + Math.PI;
+    this.rearviewCamera.rotation.x = this.pitchObject.rotation.x;
+    this.rearviewCamera.rotation.z = 0;
   }
 
   update(delta) {

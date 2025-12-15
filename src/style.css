@@ -13,6 +13,16 @@
   font-size: 22px;
   user-select: none;
 }
+#rearview {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  border: 3px solid cyan;
+  border-radius: 5px;
+  z-index: 15;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+}
+
 #crosshair {
   position: absolute;
   top: 50%;
