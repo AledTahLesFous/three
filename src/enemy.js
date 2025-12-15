@@ -15,19 +15,22 @@ export class Enemy {
     light: {
       radius: () => THREE.MathUtils.randFloat(0.8, 2),
       hpMultiplier: 1,
-      speedMultiplier: 1.3,
+      // vitesse légèrement réduite pour rendre le jeu plus lisible
+      speedMultiplier: 1.0,
       color: 0x00ff00, // Vert
     },
     normal: {
       radius: () => THREE.MathUtils.randFloat(1.5, 3),
-      hpMultiplier: 2.5,
-      speedMultiplier: 1,
+      // un peu moins de points de vie et de vitesse
+      hpMultiplier: 2.2,
+      speedMultiplier: 0.8,
       color: 0xffffff, // Blanc
     },
     heavy: {
       radius: () => THREE.MathUtils.randFloat(3, 6),
-      hpMultiplier: 4,
-      speedMultiplier: 0.6,
+      // plus lisible: ennemis lourds plus lents mais toujours dangereux
+      hpMultiplier: 3.2,
+      speedMultiplier: 0.5,
       color: 0xff6600, // Orange
     }
   };
@@ -42,7 +45,9 @@ export class Enemy {
 
     // Paramètres
     this.radius = config.radius();
-    this.baseHp = THREE.MathUtils.randInt(40, 80); // HP de base
+    // Légère réduction de la plage de HP pour rendre les ennemis
+    // un peu plus faciles à détruire, surtout en début de partie.
+    this.baseHp = THREE.MathUtils.randInt(30, 60); // HP de base
     this.hp = this.baseHp * config.hpMultiplier;
     this.maxHp = this.hp;
     this.speed = THREE.MathUtils.randFloat(15, 25) * config.speedMultiplier;

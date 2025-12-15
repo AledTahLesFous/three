@@ -18,6 +18,9 @@ let score = 0;
 let time = 0;
 let waveTime = 0;
 let isPaused = false;
+// Petit effet visuel pour indiquer clairement quand le joueur prend un dégât
+let lastHitTime = -Infinity;
+const HIT_FLASH_DURATION = 0.3;
 
 // ============ HUD ELEMENTS ============
 const scoreEl = document.getElementById('score');
@@ -175,13 +178,22 @@ function handleCollisions() {
   enemies.enemies.forEach(enemy => {
     if (!enemy.mesh) return;
     const distance = playerPos.distanceTo(enemy.mesh.position);
-    if (distance < 5 && !player.isInvincible()) {
+    // Rayon de collision légèrement réduit pour diminuer les hits \"invisibles\"
+    if (distance < 4 && !player.isInvincible()) {
       const stillAlive = player.takeDamage(50);
+      lastHitTime = time;
+
+      // Synchroniser immédiatement l'affichage des coeurs après le dégât
+      livesUI.updateLives(player.lives, player.maxLives);
       
-      if (!stillAlive && gameMode === 'normal') {
+      // Dans tous les modes, si le joueur n'a plus de vies, c'est Game Over
+      if (!stillAlive) {
+        // S'assurer que l'UI reflète bien 0 vie avant la pause
+        player.lives = 0;
+        livesUI.updateLives(player.lives, player.maxLives);
         isPaused = true;
         gameOverUI.show(score, time);
-      }
+      } 
     }
   });
 }
@@ -249,7 +261,25 @@ function animate() {
 
   player.update(delta);
   if (enemies) {
-    enemies.update(delta);
+    // Adapter le comportement des vagues d'ennemis selon le mode de jeu
+    if (gameMode === 'normal') {
+      // En mode normal, on maintient en permanence un nombre cible d'ennemis
+      // pour ce niveau, jusqu'à ce que le joueur meure ou que le niveau soit terminé.
+      enemies.updateForMode(delta, {
+        mode: 'normal',
+        maxEnemies: levelSystem.getEnemyCount(currentLevel),
+      });
+    } else if (gameMode === 'playground') {
+      // En mode playground, on augmente progressivement la pression
+      const waveEnemies = 15 + Math.floor((currentLevel - 1) * 3);
+      enemies.updateForMode(delta, {
+        mode: 'playground',
+        baseEnemies: waveEnemies,
+        waveProgress: waveTime,
+      });
+    } else {
+      enemies.update(delta);
+    }
   }
   powerupManager.update(delta);
 
@@ -265,6 +295,14 @@ function animate() {
     crosshair.style.opacity = 0.3 + blinkAmount * 0.7;
   } else {
     crosshair.style.opacity = '1';
+  }
+
+  // Flash rouge court sur le viseur quand le joueur prend un dégât
+  const timeSinceHit = time - lastHitTime;
+  if (timeSinceHit >= 0 && timeSinceHit < HIT_FLASH_DURATION) {
+    crosshair.style.boxShadow = '0 0 25px rgba(255, 0, 0, 0.9)';
+  } else {
+    crosshair.style.boxShadow = '';
   }
 
   renderer.render(scene, camera);
