@@ -58,19 +58,36 @@ export class PowerUpUI {
     progress.className = `powerupProgress ${type}`;
     progress.style.width = '100%';
     progress.dataset.progressBar = true;
+    progress.dataset.percentage = '100';
 
     progressBar.appendChild(progress);
     info.appendChild(label);
     info.appendChild(progressBar);
 
+    const timeContainer = document.createElement('div');
+    timeContainer.style.cssText = 'display: flex; flex-direction: column; align-items: flex-end; gap: 3px;';
+
     const time = document.createElement('div');
     time.className = 'powerupTime';
-    time.textContent = '10.0s';
+    time.textContent = '10s';
     time.dataset.timeDisplay = true;
+
+    const percentage = document.createElement('div');
+    percentage.style.cssText = `
+      color: rgba(255, 255, 255, 0.6);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      text-align: right;
+    `;
+    // Barre textuelle : 10 étoiles pour 10 secondes
+    percentage.dataset.percentageDisplay = true;
+
+    timeContainer.appendChild(time);
+    timeContainer.appendChild(percentage);
 
     bar.appendChild(icon);
     bar.appendChild(info);
-    bar.appendChild(time);
+    bar.appendChild(timeContainer);
 
     return bar;
   }
@@ -83,6 +100,7 @@ export class PowerUpUI {
     const progressBar = barElement.querySelector('[data-progressBar]');
     if (progressBar) {
       progressBar.style.width = percentage + '%';
+      progressBar.dataset.percentage = percentage.toFixed(0);
     }
 
     // Mettre à jour le temps avec décompte en secondes entières
@@ -91,6 +109,19 @@ export class PowerUpUI {
       // Affiche 10s, 9s, 8s... 1s, 0s
       const displayTime = Math.ceil(timeRemaining);
       timeDisplay.textContent = displayTime + 's';
+    }
+
+    // Mettre à jour l'affichage de la "barre" d'étoiles
+    const percentageDisplay = barElement.querySelector('[data-percentageDisplay]');
+    if (percentageDisplay) {
+      // Exemples :
+      // 10s -> "**********"
+      //  9s -> "*********"
+      //  ...
+      //  1s -> "*"
+      //  0s -> ""
+      const starCount = Math.max(0, Math.min(10, Math.ceil(timeRemaining)));
+      percentageDisplay.textContent = '*'.repeat(starCount);
     }
   }
 
