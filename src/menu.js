@@ -28,7 +28,7 @@ export class Menu {
         </div>
         
         <div class="menu-footer">
-          <p>Contrôles: WASD pour se déplacer | Souris pour viser | Clic pour tirer</p>
+          <p>Contrôles: ZQSD pour se déplacer | Souris pour viser | Tir Auto</p>
         </div>
       </div>
     `;

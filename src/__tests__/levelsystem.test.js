@@ -2,7 +2,7 @@
  * Tests unitaires pour le système de niveaux
  * Teste la progression et les conditions de victoire
  */
-import { LevelSystem } from '../src/utils.js';
+import { LevelSystem } from '../utils.js';
 
 describe('LevelSystem', () => {
   let levelSystem;

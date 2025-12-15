@@ -2,7 +2,7 @@
  * Tests unitaires pour le système de vies du Player
  * Teste les dégâts, l'invincibilité et la mort
  */
-import { Player } from '../src/player.js';
+import { Player } from '../player.js';
 import * as THREE from 'three';
 
 // Mock de la scène et caméra
@@ -74,6 +74,19 @@ describe('Player - Lives System', () => {
     expect(player.invincibilityTime).toBeLessThanOrEqual(0);
     expect(player.isInvincible()).toBe(false);
   });
+
+  test('devrait reprendre des dégâts après la fin de l\'invincibilité', () => {
+    player.takeDamage(50); // première collision
+    const livesAfterFirstHit = player.lives;
+
+    // On laisse passer plus de 3 secondes pour désactiver l'invincibilité
+    player.update(3.1);
+
+    player.takeDamage(50); // deuxième collision
+
+    expect(player.lives).toBe(livesAfterFirstHit - 1);
+    expect(player.isInvincible()).toBe(true); // une nouvelle fenêtre d'invincibilité démarre
+  });
 });
 
 describe('Player - Shield System', () => {
@@ -118,6 +131,27 @@ describe('Player - Shield System', () => {
     player.takeDamage(50);
 
     expect(player.lives).toBe(initialLives);
+  });
+
+  test('collision avec bouclier devrait consommer du bouclier et activer l\'invincibilité', () => {
+    player.shieldActive = true;
+    player.shieldHealth = 100;
+    const initialLives = player.lives;
+
+    // Simule une "collision" (ennemi ↔ joueur) via takeDamage
+    player.takeDamage(50);
+
+    // Le bouclier encaisse, pas les vies
+    expect(player.lives).toBe(initialLives);
+    expect(player.shieldHealth).toBe(50);
+    expect(player.isInvincible()).toBe(true);
+
+    // Une nouvelle collision pendant l'invincibilité ne doit rien changer
+    const shieldAfterFirstHit = player.shieldHealth;
+    player.takeDamage(50);
+
+    expect(player.lives).toBe(initialLives);
+    expect(player.shieldHealth).toBe(shieldAfterFirstHit);
   });
 });
 

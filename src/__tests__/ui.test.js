@@ -2,8 +2,8 @@
  * Tests unitaires pour les systèmes UI
  * Teste l'affichage des vies et des powerups
  */
-import { LivesUI } from '../src/livesui.js';
-import { PowerUpUI } from '../src/powerupui.js';
+import { LivesUI } from '../livesui.js';
+import { PowerUpUI } from '../powerupui.js';
 
 describe('LivesUI', () => {
   let livesUI;

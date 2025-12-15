@@ -2,7 +2,7 @@
  * Tests unitaires pour la classe PowerUp
  * Teste la création, les timers et la destruction
  */
-import { PowerUp } from '../src/powerup.js';
+import { PowerUp } from '../powerup.js';
 import * as THREE from 'three';
 
 // Mock de la scène THREE

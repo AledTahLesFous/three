@@ -94,7 +94,9 @@ function startGame(mode) {
     levelEl.textContent = `Vague : 1`;
     levelEl.style.display = 'block';
     enemies = new Enemies(scene, player, 15, 1);
-    player.lives = 999;
+    // En mode playground on garde un système de vies classique
+    // pour que les collisions aient un vrai impact sur le joueur.
+    player.lives = player.maxLives;
     livesUI.updateLives(player.lives, player.maxLives);
   }
   
@@ -213,9 +215,9 @@ function updateHUD() {
 
 // ============ EVENT LISTENERS ============
 
-gameOverUI.onReplay = () => {
+gameOverUI.onReplay(() => {
   menu.show();
-};
+});
 
 nextLevelBtn.onclick = () => {
   resetLevel();
