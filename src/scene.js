@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 
-// Fonction pour créer la scène spatiale
+/**
+ * Crée la scène spatiale 3D pour Space Shooter 3D
+ * - Arrière-plan noir avec 2000 étoiles (point cloud)
+ * - Illumination : lumière directionnelle (soleil) + lumière ambiante
+ * - Éléments de décor : astéroïdes/planètes statiques
+ * @returns {THREE.Scene} - La scène 3D configurée
+ */
 export function createScene() {
   const scene = new THREE.Scene();
 

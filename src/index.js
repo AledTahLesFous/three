@@ -3,6 +3,7 @@ import { Player } from './player.js';
 import { createScene } from './scene.js';
 import { Enemies } from './enemies.js';
 import { LevelSystem } from './utils.js';
+import { PowerUpManager } from './powerupmanager.js';
 
 // Level system
 const levelSystem = new LevelSystem();
@@ -61,7 +62,10 @@ const rearviewCamera = new THREE.PerspectiveCamera(75, 320 / 240, 0.1, 2000);
 player.setRearviewCamera(rearviewCamera);
 
 // Enemies
-let enemies = new Enemies(scene, player, 20);
+let enemies = new Enemies(scene, player, levelSystem.getEnemyCount(currentLevel));
+
+// PowerUp Manager
+const powerupManager = new PowerUpManager(scene, player);
 
 // Clock
 const clock = new THREE.Clock();
@@ -83,6 +87,22 @@ function handleCollisions() {
         }
       }
     });
+  });
+
+  // Collision asteroid ↔ player (avec bouclier)
+  const playerPos = player.getPosition();
+  enemies.enemies.forEach(enemy => {
+    if (!enemy.mesh) return;
+    const distance = playerPos.distanceTo(enemy.mesh.position);
+    if (distance < 5) {
+      // Si le joueur a un bouclier, il absorbe les dégâts
+      if (player.damageShield(50)) {
+        enemy.takeDamage(25); // l'astéroïde est aussi endommagé
+      } else {
+        // Sinon, le jeu est terminé
+        console.log('GAME OVER');
+      }
+    }
   });
 }
 
@@ -118,7 +138,18 @@ nextLevelBtn.onclick = () => {
 
   // Reset enemies
   enemies.clear();
-  enemies = new Enemies(scene, player, 20 + currentLevel * 10);
+  enemies = new Enemies(scene, player, levelSystem.getEnemyCount(currentLevel));
+
+  // Reset powerups
+  powerupManager.clear();
+
+  // Reset player powerups
+  player.tripleShot = false;
+  player.baseFireRate = 2;
+  player.fireRate = 2;
+  player.shieldActive = false;
+  player.shieldHealth = 0;
+  player.activePowerUps = {};
 
   // Resume game
   isPaused = false;
@@ -147,6 +178,7 @@ function animate() {
 
   player.update(delta);
   enemies.update(delta);
+  powerupManager.update(delta);
 
   handleCollisions();
   checkLevelStatus();

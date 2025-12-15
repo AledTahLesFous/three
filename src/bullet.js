@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 
+/**
+ * Classe Bullet - Représente un projectile laser tiré par le vaisseau du joueur
+ * Détecte les collisions avec les astéroïdes
+ */
 export class Bullet {
   constructor(scene, position, direction) {
     this.scene = scene;

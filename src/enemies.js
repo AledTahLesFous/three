@@ -1,6 +1,10 @@
 import { Enemy } from './enemy.js';
 import * as THREE from 'three';
 
+/**
+ * Classe Enemies - Gère la collection d'astéroïdes hostiles
+ * Génère aléatoirement des ennemis autour du joueur et maintient un nombre constant
+ */
 export class Enemies {
   constructor(scene, player, count = 20) {
     this.scene = scene;

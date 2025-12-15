@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 
+/**
+ * Classe Enemy - Représente un astéroïde hostile généré aléatoirement
+ * Chaque astéroïde poursuit le joueur, a une taille et une vie variées
+ */
 export class Enemy {
   constructor(scene, player, options = {}) {
     this.scene = scene;

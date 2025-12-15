@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { Bullet } from './bullet.js';
 
+/**
+ * Classe Player - Représente le pilote d'un vaisseau spatial en vue FPS
+ * Gère la caméra, les mouvements 3D, les tirs automatiques et le rétroviseur
+ */
 export class Player {
   constructor(camera, scene) {
     this.camera = camera;
@@ -61,6 +65,13 @@ export class Player {
     this.fireRate = 2; // tirs par seconde
     this.fireCooldown = 0;
 
+    // --- PowerUps actifs ---
+    this.activePowerUps = {};
+    this.tripleShot = false;
+    this.shieldActive = false;
+    this.shieldHealth = 0;
+    this.baseFireRate = 2;
+
     // --- Rearview mirror camera ---
     this.rearviewCamera = null;
   }
@@ -78,6 +89,62 @@ export class Player {
     this.rearviewCamera.rotation.y = this.yawObject.rotation.y + Math.PI;
     this.rearviewCamera.rotation.x = this.pitchObject.rotation.x;
     this.rearviewCamera.rotation.z = 0;
+  }
+
+  activatePowerUp(type) {
+    switch (type) {
+      case 'triple_shot':
+        this.tripleShot = true;
+        this.activatePowerUpTimer('triple_shot');
+        break;
+      case 'fire_rate':
+        this.baseFireRate = 6; // augmenter la cadence
+        this.fireRate = 6;
+        this.activatePowerUpTimer('fire_rate');
+        break;
+      case 'shield':
+        this.shieldActive = true;
+        this.shieldHealth = 100; // absorbe 100 points de dégâts
+        this.activatePowerUpTimer('shield');
+        break;
+    }
+  }
+
+  activatePowerUpTimer(type) {
+    if (this.activePowerUps[type]) {
+      clearTimeout(this.activePowerUps[type]);
+    }
+    this.activePowerUps[type] = setTimeout(() => {
+      this.deactivatePowerUp(type);
+    }, 10000); // 10 secondes
+  }
+
+  deactivatePowerUp(type) {
+    switch (type) {
+      case 'triple_shot':
+        this.tripleShot = false;
+        break;
+      case 'fire_rate':
+        this.baseFireRate = 2;
+        this.fireRate = 2;
+        break;
+      case 'shield':
+        this.shieldActive = false;
+        this.shieldHealth = 0;
+        break;
+    }
+    delete this.activePowerUps[type];
+  }
+
+  damageShield(amount) {
+    if (this.shieldActive) {
+      this.shieldHealth -= amount;
+      if (this.shieldHealth <= 0) {
+        this.deactivatePowerUp('shield');
+      }
+      return true; // dégât absorbé
+    }
+    return false; // pas de bouclier
   }
 
   update(delta) {
@@ -115,17 +182,30 @@ fire() {
   // position du joueur (caméra)
   const basePos = this.camera.getWorldPosition(new THREE.Vector3());
 
-  // Offsets locaux des deux canons (en espace caméra)
-  const left = new THREE.Vector3(-0.3, -0.1, -1);
-  const right = new THREE.Vector3(0.3, -0.1, -1);
+  if (this.tripleShot) {
+    // Triple tir : gauche, centre, droite
+    const left = new THREE.Vector3(-0.5, -0.1, -1);
+    const center = new THREE.Vector3(0, -0.1, -1);
+    const right = new THREE.Vector3(0.5, -0.1, -1);
 
-  // Les offsets doivent être transformés dans l'espace du monde via la rotation *de la caméra*
-  left.applyQuaternion(this.camera.quaternion);
-  right.applyQuaternion(this.camera.quaternion);
+    left.applyQuaternion(this.camera.quaternion);
+    center.applyQuaternion(this.camera.quaternion);
+    right.applyQuaternion(this.camera.quaternion);
 
-  // Création des bullets à la bonne position et dans la bonne direction
-  this.bullets.push(new Bullet(this.scene, basePos.clone().add(left), dir.clone()));
-  this.bullets.push(new Bullet(this.scene, basePos.clone().add(right), dir.clone()));
+    this.bullets.push(new Bullet(this.scene, basePos.clone().add(left), dir.clone()));
+    this.bullets.push(new Bullet(this.scene, basePos.clone().add(center), dir.clone()));
+    this.bullets.push(new Bullet(this.scene, basePos.clone().add(right), dir.clone()));
+  } else {
+    // Tir normal : deux canons latéraux
+    const left = new THREE.Vector3(-0.3, -0.1, -1);
+    const right = new THREE.Vector3(0.3, -0.1, -1);
+
+    left.applyQuaternion(this.camera.quaternion);
+    right.applyQuaternion(this.camera.quaternion);
+
+    this.bullets.push(new Bullet(this.scene, basePos.clone().add(left), dir.clone()));
+    this.bullets.push(new Bullet(this.scene, basePos.clone().add(right), dir.clone()));
+  }
 }
 
 
