@@ -2,41 +2,60 @@ import { Enemy } from './enemy.js';
 import * as THREE from 'three';
 
 /**
- * Classe Enemies - Gère la collection d'astéroïdes hostiles
- * Génère aléatoirement des ennemis autour du joueur et maintient un nombre constant
+ * Classe Enemies - Gère la collection d'astéroïdes hostiles avec difficulté variable
+ * Génère des ennemis de types différents selon le niveau de difficulté
  */
 export class Enemies {
-  constructor(scene, player, count = 20) {
+  constructor(scene, player, count = 20, difficultyLevel = 1) {
     this.scene = scene;
     this.player = player;
     this.enemies = [];
-    this.spawnDistance = 200; // distance minimale autour du joueur pour spawn
-    this.spawnRange = 400;    // distance maximale de spawn
+    this.difficultyLevel = difficultyLevel;
+    this.spawnDistance = 150;
+    this.spawnRange = 350;
 
-    // Création des ennemis initiaux
+    // Création des ennemis initiaux selon la difficulté
     for (let i = 0; i < count; i++) {
       this.spawnEnemy();
     }
   }
 
   spawnEnemy() {
-    // Générer une position aléatoire autour du joueur mais pas trop proche
+    // Déterminer le type d'ennemi selon la difficulté
+    const type = this.getEnemyType();
+
+    // Générer une position aléatoire autour du joueur
     const playerPos = this.player.getPosition();
+    const angle = Math.random() * Math.PI * 2;
+    const elevation = (Math.random() - 0.5) * 200;
+    const distance = this.spawnDistance + Math.random() * (this.spawnRange - this.spawnDistance);
+
     const pos = new THREE.Vector3(
-      playerPos.x + THREE.MathUtils.randFloatSpread(this.spawnRange) + Math.sign(Math.random() - 0.5) * this.spawnDistance,
-      playerPos.y + THREE.MathUtils.randFloatSpread(this.spawnRange) + Math.sign(Math.random() - 0.5) * this.spawnDistance,
-      playerPos.z + THREE.MathUtils.randFloatSpread(this.spawnRange) + Math.sign(Math.random() - 0.5) * this.spawnDistance
+      playerPos.x + Math.cos(angle) * distance,
+      playerPos.y + elevation,
+      playerPos.z + Math.sin(angle) * distance
     );
 
-    const enemy = new Enemy(this.scene, this.player);
+    const enemy = new Enemy(this.scene, this.player, type);
     enemy.mesh.position.copy(pos);
     this.enemies.push(enemy);
   }
-  clear() {
-  this.enemies.forEach(e => e.destroy());
-  this.enemies = [];
-}
 
+  getEnemyType() {
+    // Plus le niveau augmente, plus il y a d'ennemis puissants
+    const heavyChance = Math.min(0.3, 0.05 * this.difficultyLevel);
+    const normalChance = 0.4 + (0.1 * this.difficultyLevel);
+    
+    const random = Math.random();
+    if (random < heavyChance) return Enemy.TYPES.HEAVY;
+    if (random < heavyChance + normalChance) return Enemy.TYPES.NORMAL;
+    return Enemy.TYPES.LIGHT;
+  }
+
+  clear() {
+    this.enemies.forEach(e => e.destroy());
+    this.enemies = [];
+  }
 
   update(delta) {
     // Mise à jour de tous les ennemis
@@ -44,10 +63,26 @@ export class Enemies {
 
     // Supprimer les ennemis détruits
     this.enemies = this.enemies.filter(enemy => enemy.mesh !== null);
+  }
 
-    // Garder un nombre constant d'ennemis
-    while (this.enemies.length < 20) {
-      this.spawnEnemy();
+  // Pour les modes spécifiques
+  updateForMode(delta, config) {
+    this.update(delta);
+
+    // Mode normal : maintenir un nombre constant
+    if (config.mode === 'normal') {
+      while (this.enemies.length < config.maxEnemies) {
+        this.spawnEnemy();
+      }
+    }
+    // Mode playground : augmenter progressivement
+    else if (config.mode === 'playground') {
+      const waveProgress = config.waveProgress || 0;
+      const targetCount = config.baseEnemies + Math.floor(waveProgress * 0.5);
+      
+      while (this.enemies.length < targetCount) {
+        this.spawnEnemy();
+      }
     }
   }
 }
