@@ -18,7 +18,7 @@ export class Player {
     this.scene.add(this.yawObject);
 
     // Sensibilité de la souris
-    this.sensitivity = 0.002;
+    this.sensitivity = 0.003;
 
     // État des touches
     this.keys = {};
