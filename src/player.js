@@ -22,12 +22,27 @@ export class Player {
 
     // État des touches
     this.keys = {};
-    window.addEventListener('keydown', (e) => (this.keys[e.code] = true));
-    window.addEventListener('keyup', (e) => (this.keys[e.code] = false));
+    // bind handlers so we can add/remove them if needed
+    this._onKeyDown = (e) => { this.keys[e.code] = true; };
+    this._onKeyUp = (e) => { this.keys[e.code] = false; };
+    // use document listeners (more reliable with pointer lock / focus)
+    document.addEventListener('keydown', this._onKeyDown);
+    document.addEventListener('keyup', this._onKeyUp);
+    // clear keys when window loses focus to avoid stuck keys
+    window.addEventListener('blur', () => { this.keys = {}; });
 
     // Pointeur lock pour FPS
+    // Make body focusable so we can focus it on pointer lock and keep receiving keyboard events
+    document.body.tabIndex = -1;
     document.body.addEventListener('click', () => {
       document.body.requestPointerLock();
+    });
+
+    // ensure the body has focus when pointer lock is active
+    document.addEventListener('pointerlockchange', () => {
+      if (document.pointerLockElement === document.body) {
+        try { document.body.focus(); } catch (e) {}
+      }
     });
 
     document.addEventListener('mousemove', (e) => {
