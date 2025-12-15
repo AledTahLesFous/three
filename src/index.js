@@ -4,6 +4,9 @@ import { createScene } from './scene.js';
 import { Enemies } from './enemies.js';
 import { LevelSystem } from './utils.js';
 import { PowerUpManager } from './powerupmanager.js';
+import { PowerUpUI } from './powerupui.js';
+import { LivesUI } from './livesui.js';
+import { GameOverUI } from './gameoverul.js';
 
 // Level system
 const levelSystem = new LevelSystem();
@@ -67,7 +70,18 @@ let enemies = new Enemies(scene, player, levelSystem.getEnemyCount(currentLevel)
 // PowerUp Manager
 const powerupManager = new PowerUpManager(scene, player);
 
-// Clock
+// PowerUp UI
+const powerupUI = new PowerUpUI();
+
+// Lives UI
+const livesUI = new LivesUI();
+livesUI.updateLives(player.lives, player.maxLives);
+
+// Game Over UI
+const gameOverUI = new GameOverUI();
+gameOverUI.onReplay(() => {
+  location.reload(); // Recharger la page pour recommencer
+});// Clock
 const clock = new THREE.Clock();
 
 // Collision bullet ↔ enemy
@@ -89,18 +103,19 @@ function handleCollisions() {
     });
   });
 
-  // Collision asteroid ↔ player (avec bouclier)
+  // Collision asteroid ↔ player (avec bouclier et invincibilité)
   const playerPos = player.getPosition();
   enemies.enemies.forEach(enemy => {
     if (!enemy.mesh) return;
     const distance = playerPos.distanceTo(enemy.mesh.position);
-    if (distance < 5) {
-      // Si le joueur a un bouclier, il absorbe les dégâts
-      if (player.damageShield(50)) {
-        enemy.takeDamage(25); // l'astéroïde est aussi endommagé
-      } else {
-        // Sinon, le jeu est terminé
-        console.log('GAME OVER');
+    if (distance < 5 && !player.isInvincible()) {
+      // Appliquer les dégâts au joueur (gère bouclier ou perte de vie)
+      const stillAlive = player.takeDamage(50);
+      
+      if (!stillAlive) {
+        // Game Over
+        isPaused = true;
+        gameOverUI.show(score, time);
       }
     }
   });
@@ -142,6 +157,7 @@ nextLevelBtn.onclick = () => {
 
   // Reset powerups
   powerupManager.clear();
+  powerupUI.clear();
 
   // Reset player powerups
   player.tripleShot = false;
@@ -150,6 +166,11 @@ nextLevelBtn.onclick = () => {
   player.shieldActive = false;
   player.shieldHealth = 0;
   player.activePowerUps = {};
+  player.powerupTimers = {};
+  player.invincibilityTime = 0;
+
+  // Hide game over UI if visible
+  gameOverUI.hide();
 
   // Resume game
   isPaused = false;
@@ -182,6 +203,20 @@ function animate() {
 
   handleCollisions();
   checkLevelStatus();
+
+  // Update PowerUp UI
+  powerupUI.updatePowerUps(player.activePowerUps);
+
+  // Update Lives UI
+  livesUI.updateLives(player.lives, player.maxLives);
+
+  // Feedback visuel invincibilité (clignotement du crosshair)
+  if (player.isInvincible()) {
+    const blinkAmount = Math.sin(player.invincibilityTime * Math.PI * 3) * 0.5 + 0.5;
+    crosshair.style.opacity = 0.3 + blinkAmount * 0.7;
+  } else {
+    crosshair.style.opacity = '1';
+  }
 
   renderer.render(scene, camera);
 

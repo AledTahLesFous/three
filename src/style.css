@@ -3,9 +3,28 @@
 }
 
 
-#hud {
+#livesContainer {
   position: fixed;
   top: 20px;
+  left: 20px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.heart {
+  font-size: 32px;
+  filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.6));
+}
+
+.heart.empty {
+  opacity: 0.3;
+}
+
+#hud {
+  position: fixed;
+  top: 80px;
   left: 20px;
   z-index: 10;
   color: white;
@@ -78,7 +97,7 @@
     display: none;
   }
 
-  #levelComplete button {
+#levelComplete button {
     margin-top: 20px;
     padding: 10px 20px;
     background: cyan;
@@ -88,3 +107,128 @@
     cursor: pointer;
     box-shadow: 0 0 10px cyan;
   }
+
+/* PowerUp UI Indicators */
+#powerupContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+}
+
+.powerupBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  border: 2px solid;
+  min-width: 250px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.powerupBar.triple_shot {
+  border-color: #0099ff;
+  box-shadow: 0 0 10px rgba(0, 153, 255, 0.5);
+}
+
+.powerupBar.fire_rate {
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.powerupBar.shield {
+  border-color: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.powerupIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.powerupIcon.triple_shot {
+  background: #0099ff;
+  box-shadow: inset 0 0 10px rgba(0, 153, 255, 0.8);
+}
+
+.powerupIcon.fire_rate {
+  background: #00ff00;
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
+.powerupIcon.shield {
+  background: #ff0000;
+  box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.powerupInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-grow: 1;
+}
+
+.powerupLabel {
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.powerupProgressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.powerupProgress {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.1s linear;
+}
+
+.powerupProgress.triple_shot {
+  background: #0099ff;
+  box-shadow: 0 0 5px #0099ff;
+}
+
+.powerupProgress.fire_rate {
+  background: #00ff00;
+  box-shadow: 0 0 5px #00ff00;
+}
+
+.powerupProgress.shield {
+  background: #ff0000;
+  box-shadow: 0 0 5px #ff0000;
+}
+
+.powerupTime {
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  text-align: right;
+  min-width: 35px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+

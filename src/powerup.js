@@ -28,7 +28,7 @@ export class PowerUp {
     this.rotationSpeed = 3; // radians par seconde
 
     // Créer le cube lumineux
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const geometry = new THREE.BoxGeometry(5, 5, 5);
     const material = new THREE.MeshStandardMaterial({
       color: PowerUp.COLORS[this.type],
       emissive: PowerUp.COLORS[this.type],

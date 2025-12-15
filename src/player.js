@@ -66,11 +66,18 @@ export class Player {
     this.fireCooldown = 0;
 
     // --- PowerUps actifs ---
-    this.activePowerUps = {};
+    this.activePowerUps = {}; // { type: { timeout, timeRemaining } }
+    this.powerupTimers = {}; // { type: intervalID }
     this.tripleShot = false;
     this.shieldActive = false;
     this.shieldHealth = 0;
     this.baseFireRate = 2;
+    // --- Vies ---
+    this.lives = 3;
+    this.maxLives = 3;
+    this.isAlive = true;
+    this.invincibilityTime = 0;
+    this.invincibilityDuration = 3; // 3 secondes d'invincibilité
 
     // --- Rearview mirror camera ---
     this.rearviewCamera = null;
@@ -111,12 +118,30 @@ export class Player {
   }
 
   activatePowerUpTimer(type) {
+    const DURATION = 10; // 10 secondes
+
     if (this.activePowerUps[type]) {
-      clearTimeout(this.activePowerUps[type]);
+      clearTimeout(this.activePowerUps[type].timeout);
+      if (this.powerupTimers[type]) clearInterval(this.powerupTimers[type]);
     }
-    this.activePowerUps[type] = setTimeout(() => {
-      this.deactivatePowerUp(type);
-    }, 10000); // 10 secondes
+
+    // Store powerup with time remaining
+    this.activePowerUps[type] = {
+      timeRemaining: DURATION,
+      timeout: setTimeout(() => {
+        this.deactivatePowerUp(type);
+      }, DURATION * 1000)
+    };
+
+    // Update remaining time every 100ms for smooth bar, but display counts down
+    this.powerupTimers[type] = setInterval(() => {
+      if (this.activePowerUps[type]) {
+        this.activePowerUps[type].timeRemaining -= 0.1;
+        if (this.activePowerUps[type].timeRemaining < 0) {
+          this.activePowerUps[type].timeRemaining = 0;
+        }
+      }
+    }, 100);
   }
 
   deactivatePowerUp(type) {
@@ -133,6 +158,10 @@ export class Player {
         this.shieldHealth = 0;
         break;
     }
+    if (this.powerupTimers[type]) {
+      clearInterval(this.powerupTimers[type]);
+      delete this.powerupTimers[type];
+    }
     delete this.activePowerUps[type];
   }
 
@@ -147,7 +176,39 @@ export class Player {
     return false; // pas de bouclier
   }
 
+  takeDamage(amount) {
+    // Si le joueur est invincible, ignorer les dégâts
+    if (this.invincibilityTime > 0) {
+      return this.isAlive;
+    }
+
+    // Si le joueur a un bouclier, il absorbe les dégâts
+    if (this.damageShield(amount)) {
+      this.invincibilityTime = this.invincibilityDuration;
+      return this.isAlive;
+    }
+
+    // Sinon, perte de vie
+    this.lives -= 1;
+    this.invincibilityTime = this.invincibilityDuration; // 3 secondes d'invincibilité après dégât
+    
+    if (this.lives <= 0) {
+      this.lives = 0;
+      this.isAlive = false;
+    }
+    return this.isAlive;
+  }
+
+  isInvincible() {
+    return this.invincibilityTime > 0;
+  }
+
   update(delta) {
+    // Décrémenter l'invincibilité
+    if (this.invincibilityTime > 0) {
+      this.invincibilityTime -= delta;
+    }
+
     // --- Mouvement ---
     this.direction.set(0, 0, 0);
     if (this.keys['KeyW']) this.direction.z -= 1;
